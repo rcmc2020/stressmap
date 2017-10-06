@@ -29,6 +29,8 @@ function addLegend () {
     }
     legendHtml += '</table>'
     div.innerHTML = legendHtml
+    div.addEventListener('mouseover', function () {map.doubleClickZoom.disable(); });
+    div.addEventListener('mouseout', function () {map.doubleClickZoom.enable(); });
     return div
   }
   legend.addTo(map)
