@@ -1,4 +1,4 @@
-var map = L.map('mapid').setView([45.3941848, -75.7456261], 14)
+var map = L.map('mapid').setView([45.3901848, -75.7456261], 15)
 var settings = [{ color: '#0099cc', key: 'LTS1', title: 'LTS 1 - Suitable for Children', url: 'data/level_1.json' },
                 { color: '#1C7C54', key: 'LTS2', title: 'LTS 2 - Low Stress', url: 'data/level_2.json' },
                 { color: '#F0C808', key: 'LTS3', title: 'LTS 3 - Moderate Stress', url: 'data/level_3.json' },
@@ -7,9 +7,10 @@ var homePage = 'https://bikeottawa.ca/index.php/advocacy/advocacy-news/213-data_
 var legendTitle = 'Cycling Stress Map'
 var layers = {}
 
-addMapTileLayer()
+//addMapTileLayer()
 addLegend()
 addStressLayers()
+addIconLayers()
 
 function addMapTileLayer () {
   L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
@@ -66,7 +67,7 @@ function addStressLayerToMap (setting) {
 
 function drawFeatures (ctx, features, lineColor) {
   ctx.strokeStyle = lineColor
-  ctx.lineWidth = 2
+  ctx.lineWidth = 3
 
   for (var i = 0; i < features.length; i++) {
     var feature = features[i], type = feature.type
@@ -115,4 +116,75 @@ function addLegendLine (setting) {
     setting.title +
     '</td></tr>'
   )
+}
+
+
+function addIconLayers(){
+
+  var providers = [];
+  providers.push({
+      title: 'mapnik',
+      icon: 'img/icons-mapnik.png',
+      layer: L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      })
+  });
+
+  providers.push({
+      title: 'osm bw',
+      icon: 'img/icons-osm-bw.png',
+      layer: L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      })
+  });
+  
+  providers.push({
+      title: 'streets',
+      icon: 'img/icons-streets.png',
+      layer: L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+          attribution: "&copy; <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
+          maxZoom: 22,
+          id: 'mapbox.streets',
+          accessToken: 'pk.eyJ1IjoienpwdGljaGthIiwiYSI6ImNqN2FubTQ5ejBpZDAyd285MmZsdHN3d3IifQ.dc6SvmJLcl7KGPQlBYFj-g'
+      })
+  });
+      
+  providers.push({
+      title: 'satellite',
+      icon: 'img/icons-satellite.png',
+      layer: L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+          attribution: "&copy; <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
+          maxZoom: 22,
+          id: 'mapbox.satellite',
+          accessToken: 'pk.eyJ1IjoienpwdGljaGthIiwiYSI6ImNqN2FubTQ5ejBpZDAyd285MmZsdHN3d3IifQ.dc6SvmJLcl7KGPQlBYFj-g'
+      })
+  });
+  
+  providers.push({
+      title: 'light',
+      icon: 'img/icons-light.png',
+      layer: L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+          attribution: "&copy; <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
+          maxZoom: 22,
+          id: 'mapbox.light',
+          accessToken: 'pk.eyJ1IjoienpwdGljaGthIiwiYSI6ImNqN2FubTQ5ejBpZDAyd285MmZsdHN3d3IifQ.dc6SvmJLcl7KGPQlBYFj-g'
+      })
+  });
+  
+  providers.push({
+      title: 'run-bike-hike',
+      icon: 'img/icons-run-bike-hike.png',
+      layer: L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+          attribution: "&copy; <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
+          maxZoom: 22,
+          id: 'mapbox.run-bike-hike',
+          accessToken: 'pk.eyJ1IjoienpwdGljaGthIiwiYSI6ImNqN2FubTQ5ejBpZDAyd285MmZsdHN3d3IifQ.dc6SvmJLcl7KGPQlBYFj-g'
+      })
+  });
+  
+
+  L.control.iconLayers(providers).addTo(map);
+
 }
