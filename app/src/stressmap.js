@@ -216,7 +216,7 @@ function getFeaturesNearby(point, maxMeters, breakOnFirst)
 function displayOsmElementInfo(element, latlng) {
 
   var xhr = new XMLHttpRequest()
-  xhr.open('GET','http://api.openstreetmap.org/api/0.6/'+element)
+  xhr.open('GET','https://api.openstreetmap.org/api/0.6/'+element)
   xhr.onload = function () {
     if (xhr.status === 200) {
       var xmlDOM = new DOMParser().parseFromString(xhr.responseText, 'text/xml');
