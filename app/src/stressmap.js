@@ -1,11 +1,12 @@
 var map = L.map('mapid').setView([45.3901848, -75.7456261], 15)
-var settings = [{ color: '#0099cc', key: 'LTS1', title: 'LTS 1 - Suitable for Children', url: 'data/level_1.json' },
-                { color: '#1C7C54', key: 'LTS2', title: 'LTS 2 - Low Stress', url: 'data/level_2.json' },
-                { color: '#F0C808', key: 'LTS3', title: 'LTS 3 - Moderate Stress', url: 'data/level_3.json' },
-                { color: '#DD5454', key: 'LTS4', title: 'LTS 4 - High Stress', url: 'data/level_4.json' }]
+var settings = [{ color: '#0099cc', key: 'LTS1', zIndex: 1, title: 'LTS 1 - Suitable for Children', url: 'data/level_1.json' },
+                { color: '#1C7C54', key: 'LTS2', zIndex: 2, title: 'LTS 2 - Low Stress', url: 'data/level_2.json' },
+                { color: '#F0C808', key: 'LTS3', zIndex: 3, title: 'LTS 3 - Moderate Stress', url: 'data/level_3.json' },
+                { color: '#DD5454', key: 'LTS4', zIndex: 4, title: 'LTS 4 - High Stress', url: 'data/level_4.json' }]
 var homePage = 'https://bikeottawa.ca/index.php/advocacy/advocacy-news/213-data_group'
 var legendTitle = 'Cycling Stress Map'
 var layers = {}
+var dataLayer = L.geoJson();
 
 //addMapTileLayer()
 addLegend()
@@ -50,6 +51,9 @@ function addStressLayerToMap (setting) {
     if (xhr.status === 200) {
       var data = JSON.parse(xhr.responseText)
       var tileIndex = geojsonvt(data, { maxZoom: 18 })
+      
+      dataLayer.addData(data);
+      
       var canvasTiles = L.tileLayer.canvas()
       canvasTiles.drawTile = function (canvas, tilePoint, zoom) {
         var tile = tileIndex.getTile(zoom, tilePoint.x, tilePoint.y)
@@ -59,7 +63,7 @@ function addStressLayerToMap (setting) {
         drawFeatures(canvas.getContext('2d'), tile.features, setting.color)
       }
       canvasTiles.addTo(map)
-      layers[setting.key] = canvasTiles
+      layers[setting.key] = canvasTiles            
     } else {
       alert('Request failed.  Returned status of ' + xhr.status)
     }
@@ -128,7 +132,7 @@ function addIconLayers(){
       title: 'mapnik',
       icon: 'img/icons-mapnik.png',
       layer: L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
+          maxZoom: 22,
           attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       })
   });
@@ -137,7 +141,7 @@ function addIconLayers(){
       title: 'osm bw',
       icon: 'img/icons-osm-bw.png',
       layer: L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
-          maxZoom: 18,
+          maxZoom: 22,
           attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       })
   });
@@ -190,3 +194,63 @@ function addIconLayers(){
   L.control.iconLayers(providers).addTo(map);
 
 }
+
+
+function getFeaturesNearby(point, maxMeters, breakOnFirst)  
+{
+  ret = [];
+  var pt = turf.helpers.point(point);
+  
+  dataLayer.eachLayer(function(t) {
+    if(breakOnFirst && ret.length){return;}
+    var line = turf.helpers.lineString(t.feature.geometry.coordinates);  
+    if(turf.pointToLineDistance(pt, line, {units: 'meters'})<maxMeters){
+      ret.push(t.feature);
+    }
+  });
+  
+  return ret;
+}
+
+
+function displayOsmElementInfo(element, latlng) {
+
+  var xhr = new XMLHttpRequest()
+  xhr.open('GET','http://api.openstreetmap.org/api/0.6/'+element)
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      var xmlDOM = new DOMParser().parseFromString(xhr.responseText, 'text/xml');
+      var popup = "<b>" + element + '</b><hr>';
+      var tags = xmlDOM.getElementsByTagName("tag");
+      for(var i=0; i<tags.length; i++)
+      {
+        popup += tags[i].attributes["k"].value+": <b>"+tags[i].attributes["v"].value+'</b><br>';
+      }      
+      map.openPopup(popup, latlng);
+      return xhr.responseText;
+      
+    } else {
+      alert('Request failed.  Returned status of ' + xhr.status)
+    }
+  }
+  xhr.send()
+}
+
+
+var highlight;
+map.on('click', function(e) {
+  if (highlight){
+    map.removeLayer(highlight)
+  }
+   var x = e.latlng.lng;
+   var y = e.latlng.lat;
+   var features = getFeaturesNearby([x,y], 5, true);
+   if (features.length!=0) {
+     displayOsmElementInfo(features[0].id, e.latlng);
+     highlight = new L.geoJson(features[0],{style: {color:'#df42f4',  weight: 5}}).addTo(map);
+     
+     map.on('popupclose', function() {
+       map.removeLayer(highlight)
+     });
+   }
+ });
