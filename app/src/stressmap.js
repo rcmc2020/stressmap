@@ -6,7 +6,7 @@ var settings = [{ color: '#0099cc', key: 'LTS1', zIndex: 1, title: 'LTS 1 - Suit
 var homePage = 'https://bikeottawa.ca/index.php/advocacy/advocacy-news/213-data_group'
 var legendTitle = 'Cycling Stress Map'
 var layers = {}
-var dataLayer = L.geoJson();
+var tree = rbush.rbush();
 
 //addMapTileLayer()
 addLegend()
@@ -52,7 +52,7 @@ function addStressLayerToMap (setting) {
       var data = JSON.parse(xhr.responseText)
       var tileIndex = geojsonvt(data, { maxZoom: 18 })
       
-      dataLayer.addData(data);
+      tree.load(data)
       
       var canvasTiles = L.tileLayer.canvas()
       canvasTiles.drawTile = function (canvas, tilePoint, zoom) {
@@ -200,14 +200,16 @@ function getFeaturesNearby(point, maxMeters, breakOnFirst)
 {
   ret = [];
   var pt = turf.helpers.point(point);
-  
-  dataLayer.eachLayer(function(t) {
-    if(breakOnFirst && ret.length){return;}
-    var line = turf.helpers.lineString(t.feature.geometry.coordinates);  
+  var nearby = tree.search(pt);
+  for(let feature of nearby.features){
+    if(breakOnFirst && ret.length){return ret;}
+    var line = turf.helpers.lineString(feature.geometry.coordinates);  
     if(turf.pointToLineDistance(pt, line, {units: 'meters'})<maxMeters){
-      ret.push(t.feature);
+      ret.push(feature);
     }
-  });
+  }
+  
+  var nearby = tree.search(pt);
   
   return ret;
 }
