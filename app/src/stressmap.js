@@ -208,7 +208,7 @@ function displayOsmElementInfo(element, latlng) {
   const xhr = new XMLHttpRequest()
   xhr.open('GET','https://api.openstreetmap.org/api/0.6/'+element)
   xhr.onload = function () {
-    let popup = "<b>" + element + '</b><hr>';    
+    let popup = '<b><a href="https://www.openstreetmap.org/' + element + '" target="_blank">' + element + '</a></b><hr>'
     if (xhr.status === 200) {
       const xmlDOM = new DOMParser().parseFromString(xhr.responseText, 'text/xml');
       for(let tag of xmlDOM.getElementsByTagName("tag"))
