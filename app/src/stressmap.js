@@ -232,11 +232,11 @@ map.on('mousemove', function(e) {
   if (features.length!=0) {
     document.getElementById('mapid').style.cursor = 'pointer'
   }
-  else {    
+  else {
     timer = setTimeout(function()
                 {
 	                 document.getElementById('mapid').style.cursor = ''
-                 }, 300);
+                 }, 100);
   }
 })
 
