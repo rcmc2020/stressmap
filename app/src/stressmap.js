@@ -45,9 +45,9 @@ function addStressLayerToMap (setting) {
   xhr.onload = function () {
     if (xhr.status === 200) {
       const data = JSON.parse(xhr.responseText)
-      const tileIndex = geojsonvt(data, { maxZoom: 18 })      
+      const tileIndex = geojsonvt(data, { maxZoom: 18 })
       tree.load(data)
-      
+
       const canvasTiles = L.tileLayer.canvas()
       canvasTiles.drawTile = function (canvas, tilePoint, zoom) {
         const tile = tileIndex.getTile(zoom, tilePoint.x, tilePoint.y)
@@ -55,7 +55,7 @@ function addStressLayerToMap (setting) {
         drawFeatures(canvas.getContext('2d'), tile.features, setting.color, setting.weight)
       }
       canvasTiles.addTo(map)
-      layers[setting.key] = canvasTiles            
+      layers[setting.key] = canvasTiles
     } else {
       alert('Request failed.  Returned status of ' + xhr.status)
     }
@@ -136,7 +136,7 @@ function addIconLayers(){
           attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       })
   });
-  
+
   providers.push({
       title: 'streets',
       icon: 'img/icons-streets.png',
@@ -147,7 +147,7 @@ function addIconLayers(){
           accessToken: 'pk.eyJ1IjoienpwdGljaGthIiwiYSI6ImNqN2FubTQ5ejBpZDAyd285MmZsdHN3d3IifQ.dc6SvmJLcl7KGPQlBYFj-g'
       })
   });
-      
+
   providers.push({
       title: 'satellite',
       icon: 'img/icons-satellite.png',
@@ -158,7 +158,7 @@ function addIconLayers(){
           accessToken: 'pk.eyJ1IjoienpwdGljaGthIiwiYSI6ImNqN2FubTQ5ejBpZDAyd285MmZsdHN3d3IifQ.dc6SvmJLcl7KGPQlBYFj-g'
       })
   });
-  
+
   providers.push({
       title: 'light',
       icon: 'img/icons-light.png',
@@ -169,7 +169,7 @@ function addIconLayers(){
           accessToken: 'pk.eyJ1IjoienpwdGljaGthIiwiYSI6ImNqN2FubTQ5ejBpZDAyd285MmZsdHN3d3IifQ.dc6SvmJLcl7KGPQlBYFj-g'
       })
   });
-  
+
   providers.push({
       title: 'run-bike-hike',
       icon: 'img/icons-run-bike-hike.png',
@@ -180,25 +180,25 @@ function addIconLayers(){
           accessToken: 'pk.eyJ1IjoienpwdGljaGthIiwiYSI6ImNqN2FubTQ5ejBpZDAyd285MmZsdHN3d3IifQ.dc6SvmJLcl7KGPQlBYFj-g'
       })
   });
-  
+
   L.control.iconLayers(providers).addTo(map);
 
 }
 
 
-function getFeaturesNearby(point, maxMeters, breakOnFirst)  
+function getFeaturesNearby(point, maxMeters, breakOnFirst)
 {
   ret = [];
   const pt = turf.helpers.point(point);
   const nearby = tree.search(pt);
   for(let feature of nearby.features){
     if(breakOnFirst && ret.length){return ret;}
-    const line = turf.helpers.lineString(feature.geometry.coordinates);  
+    const line = turf.helpers.lineString(feature.geometry.coordinates);
     if(turf.pointToLineDistance(pt, line, {units: 'meters'})<maxMeters){
       ret.push(feature);
     }
   }
-    
+
   return ret;
 }
 
@@ -214,7 +214,7 @@ function displayOsmElementInfo(element, latlng) {
       for(let tag of xmlDOM.getElementsByTagName("tag"))
       {
         popup += tag.attributes["k"].value+": <b>"+tag.attributes["v"].value+'</b><br>';
-      }      
+      }
     } else {
       popup += 'Failed to request details from osm.org';
     }
@@ -225,6 +225,21 @@ function displayOsmElementInfo(element, latlng) {
 
 
 let highlight;
+let timer;
+map.on('mousemove', function(e) {
+  const features = getFeaturesNearby([e.latlng.lng,e.latlng.lat], 5, true)
+  clearTimeout(timer);
+  if (features.length!=0) {
+    document.getElementById('mapid').style.cursor = 'pointer'
+  }
+  else {
+    timer = setTimeout(function()
+                {
+	                 document.getElementById('mapid').style.cursor = ''
+                 }, 100);
+  }
+})
+
 map.on('click', function(e) {
   if (highlight){
     map.removeLayer(highlight)
