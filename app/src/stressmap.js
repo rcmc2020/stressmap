@@ -211,9 +211,10 @@ function displayOsmElementInfo(element, latlng) {
     let popup = '<b><a href="https://www.openstreetmap.org/' + element + '" target="_blank">' + element + '</a></b><hr>'
     if (xhr.status === 200) {
       const xmlDOM = new DOMParser().parseFromString(xhr.responseText, 'text/xml');
-      for(let tag of xmlDOM.getElementsByTagName("tag"))
+      const tags = xmlDOM.getElementsByTagName("tag");
+      for(let i=0; i<tags.length; i++)
       {
-        popup += tag.attributes["k"].value+": <b>"+tag.attributes["v"].value+'</b><br>';
+        popup += tags[i].attributes["k"].value+": <b>"+tags[i].attributes["v"].value+'</b><br>';
       }
     } else {
       popup += 'Failed to request details from osm.org';
